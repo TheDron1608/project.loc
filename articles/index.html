@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="header">Все статьи</h1>
+
+    <div id="articles-container" class="articles-container"></div>
+
+    <h2 id="form-header">Добавить новую статью</h2>
+    <form action="" id="form">
+        <p>Заголовок: <input type="text" name="name" id="form-name"></p>
+        <p>Текст: <input type="text" name="text" id="form-text"></p>
+        <input type="hidden" name="author_id" value="1" id="form-author-id">
+        <input type="submit" value="Создать новую статью" id="add-form-submit">
+        <input type="submit" value="Редактировать статью" id="edit-form-submit" hidden>
+    </form>
+
+    <script>
+        const articlesContainer = document.getElementById("articles-container");
+        const form = document.getElementById("form");
+        const formHeader = document.getElementById("form-header");
+        const addFormSubmit = document.getElementById("add-form-submit");
+        const editFormSubmit = document.getElementById("edit-form-submit")
+        const formNameField = document.getElementById("form-name");
+        const formTextField = document.getElementById("form-text");
+        const formAuthorIdField = document.getElementById("form-author-id");
+
+        let currentEditArticleId = null;
+
+        addFormSubmit.addEventListener("click", fetchAddForm);
+        editFormSubmit.addEventListener("click", fetchEditForm);
+
+        updateArticles();
+
+        async function updateArticles() {
+            const response = await fetch("../api/articles");
+            const articles = await response.json();
+
+            articlesContainer.innerHTML = "";
+
+            articles["articles"].forEach(article => {
+                let newArticle = articlesContainer.appendChild(document.createElement("div"));
+                let newArticleName = newArticle.appendChild(document.createElement("h2"));
+                let newArticleText = newArticle.appendChild(document.createElement("p"));
+                let newArticleDate = newArticle.appendChild(document.createElement("small"));
+                let newArticleEdit = newArticle.appendChild(document.createElement("button"));
+                let newArticleDelete = newArticle.appendChild(document.createElement("button"));
+    
+                newArticle.classList.add("article")
+                newArticleName.textContent = article["name"];
+                newArticleText.textContent = article["text"];
+                newArticleDate.textContent = "Создано: " + article["created_at"];
+                newArticleEdit.textContent = "Редактировать статью";
+                newArticleEdit.onclick = () => transformAddFormToEditForm(article["id"], article["name"], article["text"]);
+                newArticleDelete.textContent = "Удалить статью";
+                newArticleDelete.onclick = () => fetch("../api/articles/" + article["id"] + "/delete").then(updateArticles); 
+            });
+        }
+
+        function fetchAddForm(event) {
+            event.preventDefault();
+
+            let data = new URLSearchParams();
+            for (const pair of new FormData(form)) {
+                data.append(pair[0], pair[1]);
+            }
+
+            fetch("../api/articles", {method: 'post', body: data}).then(updateArticles);
+        }
+
+        async function fetchEditForm() {
+            event.preventDefault();
+
+            const rawData = {};
+            rawData[formAuthorIdField.name] = formAuthorIdField.value;
+            rawData[formTextField.name] = formTextField.value;
+            rawData[formNameField.name] = formNameField.value;
+
+            const data = JSON.stringify(rawData);
+
+            console.log(data);
+            fetch("../api/articles/" + currentEditArticleId, {method: 'put', body: data}).then(updateArticles);
+        }
+
+        function transformAddFormToEditForm(articleId, articleName, articleText) {
+            addFormSubmit.hidden = true;
+            editFormSubmit.hidden = false;
+
+            formNameField.value = articleName;
+            formTextField.value = articleText;
+            formHeader.textContent = "Редактировать статью " + articleId;
+
+            currentEditArticleId = articleId;
+        }
+        </script>
+</body>
+</html>

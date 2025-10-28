@@ -1,0 +1,14 @@
+.header {
+    justify-self: center;
+}
+
+.article {
+    margin: 25px;
+    flex-direction: column;
+    width: 250px;
+    display: flex;
+}
+
+.articles-container {
+    display: flex;
+}

@@ -3,22 +3,17 @@
 namespace Src\Controllers;
 
 use Src\Exceptions\NotFoundException;
+use Src\Exceptions\UnauthorizedException;
+use Src\Exceptions\InvalidArgumentException;
 use Src\Views\View;
 use Src\Models\Articles\Article;
 use Src\Models\Users\User;
+use Src\Models\Users\UsersAuthService;
 
 
-class ArticlesController
+class ArticlesController extends Controller
 {
 
-    private $view;
-    private $layout = 'default';
-
-
-    public function __construct()
-    {
-        $this->view = new View($this->layout);
-    }
     public function all()
     {
         $articles = Article::findAll();
@@ -33,19 +28,42 @@ class ArticlesController
             throw new NotFoundException();
         }
 
+        $this->view->setVar('title', "Просмотр отзыва №".$articleId);
+        $this->view->setVar('description', $article->getName());
+
         $this->view->renderHtml('Articles/view.php', ['article' => $article]);
     }
+
     public function edit(int $articleId)
     {
+        if ($this->user === null) {
+            throw new UnauthorizedException();
+        }
+
         $article = Article::getById($articleId);
         if($article === null){
             $this->view->renderHtml('Errors/404.php',[],404);
             return;
         }
-        // $article->name('Новый заголовок');
-        $article->setText('Новый текст');
-        $article->save();
+
+        if (!empty($_POST)) {
+            try {
+                $newArticle = $article->updateFromArray($_POST);
+            }
+            catch (InvalidArgumentException $e) {
+                $this->view->renderHtml('Articles/edit.php',['error' => $e->getMessage()]);
+            }
+            
+            header('Location: /project.loc/articles/'.$newArticle->getId(), true, 302);
+            exit();
+        }
+
+        $this->view->setVar('title', "Редактирование отзыва №".$articleId);
+        $this->view->setVar('description', "Редактирование отзывов доступно лишь авторизированным пользователям");
+        
+        $this->view->renderHtml('articles/edit.php', ['article' => $article]);
     }
+
     public function delete(int $articleId)
     {
         $article = Article::getById($articleId);
@@ -54,16 +72,37 @@ class ArticlesController
             return;
         }
         $article->delete();
-        var_dump($article);
+        header("Location: /project.loc/articles/all");
     }
+    
     public function add():void{
-        $article = new Article();
-        $author = User::getById(1);
-        $article->setAuthor($author);
-        $article->setName('Еще статья');
-        $article->setText('Соодержание fewrrerfffds e');
+        if ($this->user === null) {
+            throw new UnauthorizedException();
+        }
 
-        $article->save();
-        var_dump($article);
+        if (!empty($_POST)) {
+            try {
+                $newArticle = Article::createFromArray($_POST, $this->user);
+            }
+            catch (InvalidArgumentException $e) {
+                $this->view->renderHtml('Articles/add.php', ['error' => $e->getMessage()]);
+            }
+
+            header('Location: /project.loc/articles/'.$newArticle->getId(), true, 302);
+            exit();
+        }
+
+        $this->view->setVar('title', "Добавить новый отзыв");
+        $this->view->setVar('description', "Добавлять отзывы могут лишь авторизированные пользователи");
+
+        $this->view->renderHtml('articles/add.php');
+    }
+
+    protected function GetTitle(): string {
+        return "Отзывы покупателей лофт мебели";
+    }
+
+    protected function GetDescription(): string {
+        return "Доступно 1580 отзывов. 95% положительных отзывов";
     }
 }

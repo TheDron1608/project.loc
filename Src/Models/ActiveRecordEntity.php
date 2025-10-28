@@ -1,8 +1,11 @@
 <?php
 
 namespace Src\Models;
+
+use JsonSerializable;
 use Src\Services\Db;
-abstract class ActiveRecordEntity
+
+abstract class ActiveRecordEntity implements JsonSerializable
 {
     protected $id;
     public function getId(): int
@@ -98,6 +101,28 @@ abstract class ActiveRecordEntity
         $entities = $db->query('SELECT * FROM `'.static::getTableName().'`WHERE id = :id;', [':id' => $id], static::class);
         return $entities ? $entities[0] : null;
     }
+    public static function findOneByColumn(string $columnName, $value): ?self{
+        $db = Db::getInstance();
+        $result = $db->query('SELECT * FROM `' . static::getTableName() . '` WHERE `' . $columnName . '` = :value LIMIT 1;', [':value' => $value], static::class);
+        if ($result === []){
+            return null;
+        }
+        return $result[0];
+    }
+    public static function findAllByColumn(string $columnName, $value): ?array{
+        $db = Db::getInstance();
+        $result = $db->query('SELECT * FROM `' . static::getTableName() . '` WHERE `' . $columnName . '` = :value', [':value' => $value], static::class);
+        if ($result === []){
+            return null;
+        }
+        return $result;
+    }
+    public static function hasAnyByColumn(string $columnName, $value): bool {
+        return (self::findOneByColumn($columnName, $value) !== null);
+    }
     abstract protected static function getTableName(): string;
-
+    
+    public function jsonSerialize(): mixed {
+        return $this->mapPropertiesToDbFormat();
+    }
 }

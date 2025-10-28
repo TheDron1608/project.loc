@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 class="header">Просмотр статьи</h1>
+
+    <div id="articles-container" class="articles-container"></div>
+
+    <script>
+        displayArticles();
+
+        async function displayArticles() {
+            const response = await fetch("../api/articles/1");
+            const article = (await response.json())["article"];
+            const articlesContainer = document.getElementById("articles-container");
+
+            {
+                let newArticle = articlesContainer.appendChild(document.createElement("div"));
+                let newArticleName = newArticle.appendChild(document.createElement("h2"));
+                let newArticleText = newArticle.appendChild(document.createElement("p"));
+                let newArticleDate = newArticle.appendChild(document.createElement("small"));
+    
+                newArticleName.textContent = article["name"];
+                newArticleText.textContent = article["text"];
+                newArticleDate.textContent = "Создано: " + article["created_at"];
+            }
+        }
+    </script>
+</body>
+</html>

@@ -32,4 +32,7 @@ try {
 }catch (\Src\Exceptions\NotFoundException $e) {
     $view = new \Src\Views\View('default');
     $view->renderHtml('Errors/404.php', ['error'=>$e->getMessage()],404);
+} catch (\Src\Exceptions\UnauthorizedException $e) {
+    $view = new \Src\Views\View('default');
+    $view->renderHtml('Errors/401.php', ['error'=>$e->getMessage()],401);
 }
