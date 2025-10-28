@@ -3,11 +3,14 @@ namespace Src\Controllers;
 use Src\Exceptions\InvalidArgumentException;
 use Src\Views\View;
 use Src\Models\Users\User;
-use Src\Models\Users\UsersAuthService;
-
-class UsersController extends Controller
+class UsersController
 {
-
+    private $view;
+    private $layout = "default";
+    public function __construct()
+    {
+        $this->view = new View($this->layout);
+    }
     public function signUp()
     {
         if(!empty($_POST)){
@@ -17,35 +20,8 @@ class UsersController extends Controller
                 $this->view->renderHtml('Users/signUp.php',['error'=>$e->getMessage()]);
                 return;
             }
-            if($user instanceof User){
-                $this->view->renderHtml('Users/signUpSuccess.php');
-                return;
-            }
         }
         $this->view->renderHtml('Users/signUp.php');
 
-    }
-    public function login()
-    {
-        if(!empty($_POST)){
-            try {
-                $user = User::login($_POST);
-                UsersAuthService::createToken($user);
-                header('Location: /project.loc');
-                exit();
-            } catch (InvalidArgumentException $e) {
-                $this->view->renderHtml('Users/login.php',['error'=>$e->getMessage()]);
-                return;
-            }
-            
-        }
-    
-        $this->view->renderHtml('Users/login.php');
-    }
-    public function logout()
-    {
-        setcookie('token', '', -1, '/', '', false, true);
-        header('Location: /project.loc');
-        exit();
     }
 }

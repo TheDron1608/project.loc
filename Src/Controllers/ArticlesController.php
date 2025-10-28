@@ -2,15 +2,23 @@
 
 namespace Src\Controllers;
 
-use Src\Exceptions\InvalidArgumentException;
 use Src\Exceptions\NotFoundException;
-use Src\Exceptions\UnauthorizedException;
+use Src\Views\View;
 use Src\Models\Articles\Article;
+use Src\Models\Users\User;
 
 
-class ArticlesController extends Controller
+class ArticlesController
 {
 
+    private $view;
+    private $layout = 'default';
+
+
+    public function __construct()
+    {
+        $this->view = new View($this->layout);
+    }
     public function all()
     {
         $articles = Article::findAll();
@@ -31,51 +39,31 @@ class ArticlesController extends Controller
     {
         $article = Article::getById($articleId);
         if($article === null){
-            throw new NotFoundException();
+            $this->view->renderHtml('Errors/404.php',[],404);
+            return;
         }
-        if($this->user === null){
-            throw new UnauthorizedException();
-        }        
-        if(!empty($_POST)){
-            try {
-                $article->updateFromArray($_POST);
-            }catch (InvalidArgumentException $e){
-                $this->view->renderHtml('Articles/edit.php', ['error' => $e->getMessage(), 'article' => $article]);
-                return;
-            }
-            header('Location: /project.loc/articles/' . $article->getId(), true, 302);
-            exit();
-        }
-        $this->view->renderHtml('articles/edit.php', ['article' => $article]);
+        // $article->name('Новый заголовок');
+        $article->setText('Новый текст');
+        $article->save();
     }
     public function delete(int $articleId)
     {
         $article = Article::getById($articleId);
         if($article === null){
-            throw new NotFoundException();
+            $this->view->renderHtml('Errors/404.php',[],404);
+            return;
         }
-        if($this->user === null){
-            throw new UnauthorizedException();
-        }  
         $article->delete();
-        header('Location: project.loc/articles/all', true, 302);
+        var_dump($article);
     }
     public function add():void{
+        $article = new Article();
+        $author = User::getById(1);
+        $article->setAuthor($author);
+        $article->setName('Еще статья');
+        $article->setText('Соодержание fewrrerfffds e');
 
-        if($this->user === null){
-            throw new UnauthorizedException();
-        }
-
-        if(!empty($_POST)){
-            try {
-                $article = Article::createFromArray($_POST, $this->user);
-            }catch (InvalidArgumentException $e){
-                $this->view->renderHtml('Articles/add.php', ['error' => $e->getMessage()]);
-                return;
-            }
-            header('Location: /project.loc/articles/' . $article->getId(), true, 302);
-            exit();
-        }
-        $this->view->renderHtml('articles/add.php');
+        $article->save();
+        var_dump($article);
     }
 }

@@ -5,8 +5,8 @@
 <?php endif; ?>
 
 <form action="/project.loc/users/register" method="POST">
-    <label>Nickname <input type="text" name="nickname" value="<?= $_POST['nickname'] ?? '' ?>"></label>
-    <label>Email <input type="text" name="email" value="<?= $_POST['email'] ?? '' ?>"></label>
-    <label>Password <input type="password" name="password" ></label>
+    <label>Nickname <input type="text" name="nickname"></label>
+    <label>Email <input type="text" name="email"></label>
+    <label>Password <input type="password" name="password"></label>
     <input type="submit" value="Зарегистрироваться">
 </form>
