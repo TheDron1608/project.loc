@@ -1,7 +1,7 @@
 <?php
 namespace Src\Exceptions;
 
-class InvalidArgumentException extends FormException
+class InvalidArgumentException extends \Exception
 {
 
 }

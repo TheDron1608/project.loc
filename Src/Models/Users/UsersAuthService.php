@@ -25,7 +25,4 @@ class  UsersAuthService
         }
         return $user;
     }
-    public static function createCsrfToken():string{
-        return sha1(random_bytes(100)) . sha1(random_bytes(100));
-    }
 }

@@ -17,8 +17,6 @@ abstract class Controller
         $this->user = UsersAuthService::getUserByToken();
         $this->view->setVar('user', $this->user);
         $this->baseDir = $GLOBALS['base_dir'];
-        session_start();
-        $_SESSION['csrf_token'] ??= UsersAuthService::createCsrfToken();
     }
 
 }

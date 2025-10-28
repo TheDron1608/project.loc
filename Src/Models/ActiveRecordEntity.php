@@ -2,7 +2,7 @@
 
 namespace Src\Models;
 use Src\Services\Db;
-abstract class ActiveRecordEntity implements \JsonSerializable
+abstract class ActiveRecordEntity
 {
     protected $id;
     public function getId(): int
@@ -113,17 +113,6 @@ abstract class ActiveRecordEntity implements \JsonSerializable
             return null;
         }
         return $result;
-    }
-    public static function search(string $searchString): ?array
-    {
-        $db = Db::getInstance();
-        $searchString = "%$searchString%";
-        $result = $db->query('SELECT * FROM `' . static::getTableName() . '` WHERE title LIKE :searchString',['searchString'=>$searchString],static::class);
-        return $result;
-    }
-    public function jsonSerialize(): mixed
-    {
-        return $this->mapPropertiesToDbFormat();
     }
     abstract protected static function getTableName(): string;
 
